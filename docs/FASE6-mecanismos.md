@@ -62,7 +62,25 @@ donde el precio sube según se compra. Cuando la curva se completa, el token
 | Creator fees | **Sí**, es su rasgo diferencial (ver §2). |
 | Control del token | **Bajo.** La plataforma fija supply, decimales y curva. |
 | Metadata | La gestiona la plataforma. |
-| Riesgo | Depender de un tercero. Y **ratio de graduación muy bajo**: la enorme mayoría de tokens nunca gradúa. |
+| Riesgo | Depender de un tercero. Y **ratio de graduación muy bajo** (ver §2.1 abajo). |
+
+#### 2.1 Tasa de graduación — cifras verificadas (agosto 2026)
+
+Esto es lo que decide si "crear por 2-3 $" significa algo:
+
+| Periodo | Tasa de graduación |
+| --- | --- |
+| Histórico | **por debajo del 2 %** |
+| Junio 2026 | **0,26 %** — unos 2-3 de cada 1.000 |
+| Tras el mecanismo BOOST | **~6,7 %** |
+
+La curva se completa cuando acumula **~85 SOL de compras reales**. Ese dinero lo
+ponen terceros comprando; no lo aporta el creador.
+
+**Lectura correcta:** el coste de entrada es bajísimo, y por eso mismo la
+competencia es masiva y la tasa de éxito es la que es. Lo barato es crear el
+token; lo difícil es que 85 SOL de desconocidos entren en tu curva. Fabricar esa
+actividad está prohibido por §2.1 y no se va a implementar.
 
 ### Opción B — Token SPL propio + pool en un DEX (Raydium / Meteora / Orca)
 
