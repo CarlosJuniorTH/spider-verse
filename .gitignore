@@ -1,0 +1,48 @@
+# ─────────────────────────────────────────────────────────────
+# SEGURIDAD — NUNCA commitear claves. Ver CONTEXTO.md §Seguridad
+# ─────────────────────────────────────────────────────────────
+.env
+.env.*
+!.env.example
+
+# Keypairs de Solana (defensa en profundidad: las claves REALES
+# viven FUERA del repo, en ~/.solana-memecoin-keys/, pero por si
+# alguna vez alguien las copia aquí por error)
+*.key
+*id.json
+id*.json
+keypair*.json
+*keypair.json
+/keys/
+/.keys/
+wallet*.json
+*.seed
+*.mnemonic
+
+# ─────────────────────────────────────────────────────────────
+# Node / TypeScript
+# ─────────────────────────────────────────────────────────────
+node_modules/
+dist/
+build/
+*.tsbuildinfo
+.npm/
+npm-debug.log*
+coverage/
+
+# ─────────────────────────────────────────────────────────────
+# Artefactos de despliegue (contienen direcciones, no secretos,
+# pero se regeneran; se versionan solo los de mainnet a mano)
+# ─────────────────────────────────────────────────────────────
+/artifacts/devnet/
+/artifacts/localnet/
+/.cache/
+
+# ─────────────────────────────────────────────────────────────
+# SO / editor
+# ─────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/

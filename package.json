@@ -1,0 +1,52 @@
+{
+  "name": "solana-memecoin",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Memecoin en Solana con transparencia on-chain total. Desarrollo 100% en devnet, coste 0 EUR.",
+  "license": "MIT",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "wallet:new": "tsx scripts/wallet-new.ts",
+    "wallet:show": "tsx scripts/wallet-show.ts",
+    "balance": "tsx scripts/balance.ts",
+    "airdrop": "tsx scripts/airdrop.ts",
+    "estimate-cost": "tsx scripts/estimate-cost.ts",
+    "preflight": "tsx scripts/preflight.ts",
+
+    "metadata:build": "tsx scripts/metadata-build.ts",
+    "token:create": "tsx scripts/token-create.ts",
+    "metadata:attach": "tsx scripts/metadata-attach.ts",
+    "authorities:revoke": "tsx scripts/authorities-revoke.ts",
+
+    "verify:supply": "tsx scripts/verify-supply.ts",
+    "verify:authorities": "tsx scripts/verify-authorities.ts",
+    "verify:metadata": "tsx scripts/verify-metadata.ts",
+    "inspect:distribution": "tsx scripts/inspect-distribution.ts",
+    "verify:all": "tsx scripts/verify-all.ts",
+
+    "simulate:launch": "tsx scripts/simulate-launch.ts",
+    "budget:mainnet": "tsx scripts/budget-mainnet.ts",
+
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@metaplex-foundation/mpl-token-metadata": "^3.4.0",
+    "@metaplex-foundation/umi": "^1.5.1",
+    "@metaplex-foundation/umi-bundle-defaults": "^1.5.1",
+    "@metaplex-foundation/umi-web3js-adapters": "^1.5.1",
+    "@solana/spl-token": "^0.4.15",
+    "@solana/web3.js": "^1.98.4",
+    "dotenv": "^17.4.2",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@types/node": "^26.1.2",
+    "tsx": "^4.23.11",
+    "typescript": "^7.0.2",
+    "vitest": "^4.1.10"
+  }
+}

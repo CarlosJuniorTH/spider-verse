@@ -1,0 +1,15 @@
+{
+  "name": "Devnet Test Coin",
+  "symbol": "DTEST",
+  "description": "Token de PRUEBA en la devnet de Solana. No tiene ningún valor económico y no es negociable. Existe solo para validar el proceso de creación, metadata, autoridades y distribución.",
+  "image": "PENDIENTE://sube assets/logo.png y pon aquí su URL",
+  "properties": {
+    "files": [
+      {
+        "uri": "PENDIENTE://sube assets/logo.png y pon aquí su URL",
+        "type": "image/png"
+      }
+    ],
+    "category": "image"
+  }
+}

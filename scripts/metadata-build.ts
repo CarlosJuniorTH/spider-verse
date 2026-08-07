@@ -1,0 +1,166 @@
+/**
+ * metadata-build.ts — genera `assets/metadata.json` (el JSON off-chain del token).
+ *
+ * QUÉ:        compone el JSON estándar de metadata a partir de token.config.ts.
+ * POR QUÉ:    la cuenta de metadata on-chain solo guarda una URI; el contenido
+ *             (descripción, imagen, enlaces) vive en ese JSON. §4.5.
+ * CUÁNTO:     0 SOL. Es un fichero local.
+ * DINERO REAL: No.
+ * REVERSIBLE: Sí — se regenera cuando quieras.
+ *
+ * ── §4.5 HOSTING SIN SERVIDOR ────────────────────────────────────────────────
+ * El operador no quiere dominio, web, backend ni base de datos. Dos opciones,
+ * ambas de 0 €, y este script deja el fichero listo para las dos:
+ *
+ *   A) GitHub raw  — subes el repo (o solo `assets/`) a un repositorio público
+ *      y usas `https://raw.githubusercontent.com/<user>/<repo>/<rama>/assets/metadata.json`.
+ *      Gratis y sin cuenta nueva si ya tienes GitHub. Contra: si borras el repo,
+ *      la metadata muere. Centralizado.
+ *
+ *   B) IPFS con tier gratuito (Pinata / web3.storage) — descentralizado y es lo
+ *      que espera el ecosistema. Contra: hay que crear una cuenta, y el
+ *      "pinning" gratuito no es eterno si nadie más replica el contenido.
+ *
+ * Este script NO sube nada a ningún sitio: subir contenido es una acción hacia
+ * fuera y la decides tú. Solo genera el fichero e imprime los pasos.
+ */
+
+import fs from 'node:fs';
+import path from 'node:path';
+import { execFileSync } from 'node:child_process';
+
+import { action, log } from '../src/lib/log.js';
+import { REPO_ROOT } from '../src/lib/env.js';
+import { resolveCluster } from '../src/lib/cluster.js';
+import { tokenConfig, profileFor, profileNameFor } from '../config/token.config.js';
+
+/** Estructura estándar que leen wallets y agregadores. */
+interface TokenMetadataJson {
+  name: string;
+  symbol: string;
+  description: string;
+  image: string;
+  external_url?: string;
+  properties: {
+    files: Array<{ uri: string; type: string }>;
+    category: string;
+  };
+  extensions?: Record<string, string>;
+}
+
+/** Intenta derivar la URL raw de GitHub desde el remoto configurado. */
+function deriveGithubRawUrl(file: string): string | null {
+  let remote: string;
+  try {
+    remote = execFileSync('git', ['remote', 'get-url', 'origin'], {
+      cwd: REPO_ROOT,
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'ignore'],
+    }).trim();
+  } catch {
+    return null;
+  }
+
+  const m = /github\.com[:/]([^/]+)\/([^/.]+)(?:\.git)?$/.exec(remote);
+  if (m === null) return null;
+
+  let branch = 'main';
+  try {
+    branch = execFileSync('git', ['rev-parse', '--abbrev-ref', 'HEAD'], {
+      cwd: REPO_ROOT,
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'ignore'],
+    }).trim();
+  } catch {
+    /* se queda en main */
+  }
+
+  return `https://raw.githubusercontent.com/${m[1]}/${m[2]}/${branch}/${file}`;
+}
+
+async function main(): Promise<void> {
+  const cluster = resolveCluster();
+  const profileName = profileNameFor(cluster.name);
+  const profile = profileFor(cluster.name);
+
+  action({
+    what: `Generar assets/metadata.json para el perfil «${profileName}»`,
+    why: 'La cuenta de metadata on-chain solo guarda una URI; el contenido vive en este JSON (§4.5)',
+    cost: '0 SOL — fichero local, no toca la red',
+    realMoney: false,
+    reversible: 'Sí — se regenera cuando quieras',
+    cluster: cluster.name,
+  });
+
+  const imageUrlEnv = process.env['IMAGE_URI'];
+  const imageRaw = deriveGithubRawUrl(profile.metadata.imageFile);
+  const image = imageUrlEnv ?? imageRaw ?? `PENDIENTE://sube ${profile.metadata.imageFile} y pon aquí su URL`;
+
+  const json: TokenMetadataJson = {
+    name: profile.name,
+    symbol: profile.symbol,
+    description: profile.description,
+    image,
+    properties: {
+      files: [{ uri: image, type: 'image/png' }],
+      category: 'image',
+    },
+  };
+  if (profile.metadata.externalUrl !== null) json.external_url = profile.metadata.externalUrl;
+
+  const outPath = path.join(REPO_ROOT, 'assets', 'metadata.json');
+  fs.mkdirSync(path.dirname(outPath), { recursive: true });
+  fs.writeFileSync(outPath, `${JSON.stringify(json, null, 2)}\n`, 'utf8');
+
+  log.ok('Fichero generado.');
+  log.kv('Ruta', outPath);
+  log.kv('name / symbol', `${json.name} / ${json.symbol}`);
+  log.kv('decimals', String(tokenConfig.decimals));
+  log.kv('image', json.image);
+
+  // ── Estado de la imagen ────────────────────────────────────────────────────
+  const imagePath = path.join(REPO_ROOT, profile.metadata.imageFile);
+  log.title('Imagen');
+  if (fs.existsSync(imagePath)) {
+    const size = fs.statSync(imagePath).size;
+    log.ok(`${profile.metadata.imageFile} presente (${(size / 1024).toFixed(1)} KB)`);
+    if (size > 200 * 1024) {
+      log.warn('Pesa más de 200 KB. Muchos agregadores la reescalan; conviene optimizarla.');
+    }
+  } else {
+    log.warn(`Falta ${profile.metadata.imageFile}. El token funcionará, pero se verá sin logo.`);
+    log.info('Formato recomendado: PNG cuadrado, 512×512 px, fondo transparente o sólido.');
+  }
+
+  // ── Hosting (§4.5) ─────────────────────────────────────────────────────────
+  log.title('Hosting de la metadata (§4.5) — ninguna opción cuesta dinero');
+
+  if (imageRaw !== null) {
+    log.ok('Detectado remoto de GitHub. URL raw que tendrá el JSON una vez lo subas:');
+    log.kv('METADATA_URI', `${deriveGithubRawUrl('assets/metadata.json') ?? ''}`);
+    log.dim('      Solo funcionará cuando el repositorio sea PÚBLICO y el fichero esté empujado.');
+  } else {
+    log.warn('No hay remoto de GitHub configurado, así que no puedo derivar una URL.');
+  }
+
+  log.plain('');
+  log.info('Opción A — GitHub raw:');
+  log.dim('      1. Crea un repo público y empuja al menos assets/');
+  log.dim('      2. Copia la URL raw de assets/metadata.json');
+  log.dim('      3. Ponla en .env como METADATA_URI=...');
+  log.plain('');
+  log.info('Opción B — IPFS (Pinata / web3.storage, tier gratuito):');
+  log.dim('      1. Sube primero logo.png, copia su CID');
+  log.dim('      2. Pon esa URL en IMAGE_URI y vuelve a ejecutar este script');
+  log.dim('      3. Sube el metadata.json resultante y pon su URL en METADATA_URI');
+  log.plain('');
+  log.warn('No subo nada a ningún sitio: publicar contenido es una acción hacia fuera y la decides tú.');
+
+  log.plain('');
+  log.info('Cuando tengas METADATA_URI en .env:  npm run metadata:attach');
+}
+
+main().catch((err: unknown) => {
+  log.error(err instanceof Error ? err.message : String(err));
+  process.exitCode = 1;
+});
