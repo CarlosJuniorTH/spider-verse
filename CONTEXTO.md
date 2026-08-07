@@ -219,10 +219,19 @@ y en sistemas de análisis automático (RugCheck, Bubblemaps, pestaña de holder
 DexScreener, Birdeye). Comparar las tres opciones con criterios verificables.
 La asignación debe ser **pública y fácil de identificar**, en una sola wallet.
 
-### 7.2 Vesting / lock opcional
-Estudiar si mejora la credibilidad. Evaluar opciones open source y gratuitas
-(p. ej. Jupiter Lock, Streamflow). Verificar coste real y si el lock es
-públicamente verificable por terceros.
+### 7.2 Vesting / lock opcional — ✅ ANALIZADO (2026-08-07)
+Ver `docs/ANALISIS-7.2-vesting-lock.md`.
+
+**Resultado: sí existe opción gratuita y verificable.** Jupiter Lock no tiene
+comisiones de protocolo (solo fees de red), es open source y está auditado por
+OtterSec y Sec3. Streamflow cuesta 0,117 SOL.
+
+⚠ **Condición crítica:** el creador del lock elige quién puede cancelarlo. Un
+lock cancelable por ti **no vale nada** para la credibilidad. Hay que configurar
+cancelar = `none` y cambiar destinatario = `none`.
+
+**Consecuencia sobre §7.1:** con lock no cancelable, el 10 % pasa de bandera roja
+a defendible. La decisión del porcentaje y del calendario sigue siendo del operador.
 
 ### 7.3 Autoridades — analizar antes de tocar
 Analizar específicamente `mintAuthority`, `freezeAuthority`, `updateAuthority`:
