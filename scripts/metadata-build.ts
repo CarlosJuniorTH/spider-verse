@@ -143,12 +143,25 @@ async function main(): Promise<void> {
   );
   if (socials.length > 0) json.extensions = Object.fromEntries(socials);
 
+  const body = `${JSON.stringify(json, null, 2)}\n`;
   const outPath = path.join(REPO_ROOT, 'assets', 'metadata.json');
   fs.mkdirSync(path.dirname(outPath), { recursive: true });
-  fs.writeFileSync(outPath, `${JSON.stringify(json, null, 2)}\n`, 'utf8');
+  fs.writeFileSync(outPath, body, 'utf8');
+
+  // Igual que con la imagen: una copia cuyo nombre depende del CONTENIDO.
+  // La URL que se escribe on-chain debe ser ESTA, no la de nombre fijo.
+  // Motivo: `metadata.json` tiene URL constante, así que su caché va siempre por
+  // detrás. Pasó dos veces en devnet — la cadena decía el nombre nuevo y el JSON
+  // servido todavía el viejo. Con nombre por contenido, cada versión es una URL
+  // distinta y no hay caché que valga.
+  const jsonHash = crypto.createHash('sha256').update(body).digest('hex').slice(0, 10);
+  const versionedName = `metadata.${jsonHash}.json`;
+  fs.writeFileSync(path.join(REPO_ROOT, 'assets', versionedName), body, 'utf8');
+  const versionedUri = deriveGithubRawUrl(`assets/${versionedName}`);
 
   log.ok('Fichero generado.');
   log.kv('Ruta', outPath);
+  log.kv('Versión inmutable', `assets/${versionedName}`);
   log.kv('name / symbol', `${json.name} / ${json.symbol}`);
   log.kv('decimals', String(tokenConfig.decimals));
   log.kv('image', json.image);
@@ -203,9 +216,11 @@ async function main(): Promise<void> {
   // ── Hosting (§4.5) ─────────────────────────────────────────────────────────
   log.title('Hosting de la metadata (§4.5) — ninguna opción cuesta dinero');
 
-  if (imageRaw !== null) {
-    log.ok('Detectado remoto de GitHub. URL raw que tendrá el JSON una vez lo subas:');
-    log.kv('METADATA_URI', `${deriveGithubRawUrl('assets/metadata.json') ?? ''}`);
+  if (versionedUri !== null) {
+    log.ok('Detectado remoto de GitHub. Pon ESTA URL en .env como METADATA_URI:');
+    log.kv('METADATA_URI', versionedUri);
+    log.dim('      Es la versión con hash. Úsala siempre en vez de la de nombre fijo:');
+    log.dim('      la de nombre fijo la cachean los exploradores y acaban mostrando datos viejos.');
     log.dim('      Solo funcionará cuando el repositorio sea PÚBLICO y el fichero esté empujado.');
   } else {
     log.warn('No hay remoto de GitHub configurado, así que no puedo derivar una URL.');

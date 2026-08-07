@@ -1,0 +1,15 @@
+{
+  "name": "Sashita",
+  "symbol": "SASHITA",
+  "description": "Sashita. Ensayo en la devnet de Solana para ver cómo queda el token antes de nada. NO tiene ningún valor económico, no es negociable y no existe fuera de la red de pruebas.",
+  "image": "https://raw.githubusercontent.com/CarlosJuniorTH/spider-verse/main/assets/logo.582eda8dc4.png",
+  "properties": {
+    "files": [
+      {
+        "uri": "https://raw.githubusercontent.com/CarlosJuniorTH/spider-verse/main/assets/logo.582eda8dc4.png",
+        "type": "image/png"
+      }
+    ],
+    "category": "image"
+  }
+}
