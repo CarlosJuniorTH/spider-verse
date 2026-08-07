@@ -1,7 +1,7 @@
 {
-  "name": "Devnet Test Coin",
-  "symbol": "DTEST",
-  "description": "Token de PRUEBA en la devnet de Solana. No tiene ningún valor económico y no es negociable. Existe solo para validar el proceso de creación, metadata, autoridades y distribución.",
+  "name": "Sasha",
+  "symbol": "SASHA",
+  "description": "Sasha. Ensayo en la devnet de Solana para ver cómo queda el token antes de nada. NO tiene ningún valor económico, no es negociable y no existe fuera de la red de pruebas.",
   "image": "https://raw.githubusercontent.com/CarlosJuniorTH/spider-verse/main/assets/logo.png",
   "properties": {
     "files": [
