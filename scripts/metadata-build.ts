@@ -27,6 +27,7 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
+import crypto from 'node:crypto';
 import { execFileSync } from 'node:child_process';
 
 import { action, log } from '../src/lib/log.js';
@@ -92,9 +93,35 @@ async function main(): Promise<void> {
     cluster: cluster.name,
   });
 
+  // ── Imagen con nombre derivado de su CONTENIDO ────────────────────────────
+  //
+  // POR QUÉ: los exploradores y agregadores cachean las imágenes POR URL, de
+  // forma agresiva y durante mucho tiempo. Si reutilizas `logo.png` para una
+  // imagen distinta, siguen mostrando la vieja. Comprobado en la práctica:
+  // Solscan mostró el logo anterior con el nombre nuevo.
+  //
+  // En mainnet esto es grave: si lanzas con el logo equivocado y después
+  // revocas `updateAuthority` (§7.3), te quedas con él PARA SIEMPRE.
+  //
+  // Solución: el nombre del fichero incluye un hash de su contenido. Cambiar la
+  // imagen cambia la URL, así que ninguna caché puede servir la antigua.
+  const sourceImage = path.join(REPO_ROOT, profile.metadata.imageFile);
+  let publishedImageFile = profile.metadata.imageFile;
+
+  if (fs.existsSync(sourceImage)) {
+    const bytes = fs.readFileSync(sourceImage);
+    const hash = crypto.createHash('sha256').update(bytes).digest('hex').slice(0, 10);
+    const ext = path.extname(profile.metadata.imageFile);
+    const dir = path.dirname(profile.metadata.imageFile);
+    publishedImageFile = path.posix.join(dir.replace(/\\/g, '/'), `logo.${hash}${ext}`);
+
+    const target = path.join(REPO_ROOT, publishedImageFile);
+    if (!fs.existsSync(target)) fs.writeFileSync(target, bytes);
+  }
+
   const imageUrlEnv = process.env['IMAGE_URI'];
-  const imageRaw = deriveGithubRawUrl(profile.metadata.imageFile);
-  const image = imageUrlEnv ?? imageRaw ?? `PENDIENTE://sube ${profile.metadata.imageFile} y pon aquí su URL`;
+  const imageRaw = deriveGithubRawUrl(publishedImageFile);
+  const image = imageUrlEnv ?? imageRaw ?? `PENDIENTE://sube ${publishedImageFile} y pon aquí su URL`;
 
   const json: TokenMetadataJson = {
     name: profile.name,
@@ -127,11 +154,14 @@ async function main(): Promise<void> {
   log.kv('image', json.image);
 
   // ── Estado de la imagen ────────────────────────────────────────────────────
-  const imagePath = path.join(REPO_ROOT, profile.metadata.imageFile);
+  const imagePath = sourceImage;
   log.title('Imagen');
   if (fs.existsSync(imagePath)) {
     const size = fs.statSync(imagePath).size;
     log.ok(`${profile.metadata.imageFile} presente (${(size / 1024).toFixed(1)} KB)`);
+    log.kv('Se publica como', publishedImageFile);
+    log.dim('      El nombre incluye un hash del contenido: si cambias la imagen cambia la URL,');
+    log.dim('      y así ninguna caché de explorador puede seguir sirviendo la anterior.');
     if (size > 200 * 1024) {
       log.warn('Pesa más de 200 KB. Muchos agregadores la reescalan; conviene optimizarla.');
     }
