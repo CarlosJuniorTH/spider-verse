@@ -28,12 +28,21 @@ import { MINT_SIZE, ACCOUNT_SIZE } from '@solana/spl-token';
 import { env } from './env.js';
 
 /**
- * Tamaño de la cuenta de metadata de Metaplex Token Metadata (`MAX_METADATA_LEN`).
+ * Tamaño de la cuenta de metadata de Metaplex (`MAX_METADATA_LEN`).
  * Es un tamaño de cuenta del programa, no una tarifa.
- * TODO(FASE 3): verificar leyendo una cuenta de metadata real en devnet
- * (`connection.getAccountInfo(pda)` → `data.length`) antes de dar cifras finales.
+ *
+ * VERIFICADO en devnet (2026-08-07): una cuenta creada con `createV1` y
+ * `TokenStandard.Fungible` ocupa realmente **607 bytes**, no 679.
+ *
+ * Se mantiene 679 a propósito para **estimar**: es el máximo del programa, así
+ * que el presupuesto queda ligeramente por encima del coste real (~0,0006 SOL
+ * de más). En un presupuesto, pasarse es preferible a quedarse corto.
+ * `verify:metadata` informa del tamaño real de cada cuenta.
  */
 export const METAPLEX_METADATA_ACCOUNT_SIZE = 679;
+
+/** Tamaño real medido en devnet para un token fungible creado con `createV1`. */
+export const METAPLEX_METADATA_MEASURED_SIZE = 607;
 
 export interface RentLine {
   label: string;
