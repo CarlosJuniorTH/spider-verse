@@ -108,6 +108,14 @@ async function main(): Promise<void> {
   };
   if (profile.metadata.externalUrl !== null) json.external_url = profile.metadata.externalUrl;
 
+  // `extensions`: el campo estándar donde wallets y exploradores buscan los
+  // enlaces del proyecto. Solo se incluyen los que estén definidos: un campo
+  // vacío o un enlace muerto es peor que su ausencia.
+  const socials = Object.entries(profile.metadata.socials).filter(
+    (entry): entry is [string, string] => entry[1] !== null && entry[1] !== '',
+  );
+  if (socials.length > 0) json.extensions = Object.fromEntries(socials);
+
   const outPath = path.join(REPO_ROOT, 'assets', 'metadata.json');
   fs.mkdirSync(path.dirname(outPath), { recursive: true });
   fs.writeFileSync(outPath, `${JSON.stringify(json, null, 2)}\n`, 'utf8');
@@ -130,6 +138,36 @@ async function main(): Promise<void> {
   } else {
     log.warn(`Falta ${profile.metadata.imageFile}. El token funcionará, pero se verá sin logo.`);
     log.info('Formato recomendado: PNG cuadrado, 512×512 px, fondo transparente o sólido.');
+  }
+
+  // ── Enlaces del proyecto ───────────────────────────────────────────────────
+  log.title('Enlaces públicos (campo `extensions`)');
+  if (socials.length === 0) {
+    log.warn('Ninguno definido. El token no apunta a ningún sitio.');
+    log.dim('      Sin enlaces, quien lo encuentre no tiene forma de saber qué es ni quién');
+    log.dim('      está detrás, y no hay nada que mirar antes de decidir. Se configuran en');
+    log.dim('      config/token.config.ts → metadata.socials');
+    log.dim('      Aviso honesto: tener enlaces es NECESARIO, no suficiente. Un enlace a una');
+    log.dim('      cuenta vacía no ayuda; puede restar.');
+  } else {
+    for (const [k, v] of socials) log.kv(k, v);
+    log.info('Comprobando que responden…');
+    for (const [k, v] of socials) {
+      if (!/^https?:\/\//.test(v)) {
+        log.warn(`${k}: "${v}" no es una URL http(s)`);
+        continue;
+      }
+      try {
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), 10_000);
+        const res = await fetch(v, { method: 'HEAD', signal: controller.signal });
+        clearTimeout(timer);
+        if (res.ok) log.ok(`${k}: HTTP ${res.status}`);
+        else log.warn(`${k}: HTTP ${res.status} — un enlace roto resta credibilidad`);
+      } catch {
+        log.warn(`${k}: no responde. Un enlace muerto es peor que no ponerlo.`);
+      }
+    }
   }
 
   // ── Hosting (§4.5) ─────────────────────────────────────────────────────────

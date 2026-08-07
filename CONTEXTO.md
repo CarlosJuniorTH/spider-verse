@@ -280,6 +280,43 @@ con agregadores · riesgos · aparición en AVE.ai / Birdeye / DexScreener · Ju
 (3) promoción de pago. **No queremos pagar promoción.** No asumir que hay que pagar
 a los trackers para aparecer.
 
+### 7.6 Crecimiento y demanda — lo que NO es un problema de ingeniería
+
+Registrado el 2026-08-07, tras preguntar el operador "¿cómo hacemos para crecer?".
+
+**El código está terminado. Lo que falta no es código.** Conviene tenerlo claro
+para no seguir construyendo herramientas creyendo que acercan el objetivo.
+
+Lo que **sí** se puede resolver técnicamente, y ya está hecho o es trivial:
+
+- metadata correcta, imagen que carga, enlaces sociales (`extensions`) — hecho
+- autoridades revocadas y verificables — hecho
+- distribución pública y auditable — hecho
+- indexación automática en DexScreener y Jupiter — gratuita, no requiere nada
+
+Todo eso es **condición necesaria y no suficiente**. Sirve para que quien te
+encuentre no desconfíe. **No sirve para que te encuentre.**
+
+Lo que **no** se puede resolver técnicamente:
+
+- que exista alguien que quiera que este token exista
+- de dónde salen los primeros compradores
+- por qué a alguien le importaría
+
+Los métodos que "garantizan" movimiento (volumen simulado, bots, compradores
+falsos, wallets propias comprándose entre sí) están **prohibidos por §2.1** y no
+se van a implementar, ni aunque se pidan. No es una limitación técnica: es la
+decisión que el operador tomó al empezar y que da sentido al proyecto.
+
+**Orden correcto:** la audiencia primero, el token después. Un token es una
+forma de que una comunidad que ya existe tenga algo con lo que jugar; no es una
+forma de crear esa comunidad. Lanzar sin audiencia es el caso del 98 % que no
+gradúa (`docs/FASE6-mecanismos.md` §2.1).
+
+**Qué NO debe hacer el asistente aquí:** prometer crecimiento, proponer tácticas
+de marketing agresivo, ni sugerir atajos que rocen §2.1. Si el operador pregunta
+cómo crecer, la respuesta honesta incluye que no hay respuesta técnica.
+
 ### 7.5 Creator fees
 Si el mecanismo elegido ofrece creator fees legítimas, analizarlas: ¿puede el creador
 recibir SOL por volumen **real** sin vender continuamente su asignación?

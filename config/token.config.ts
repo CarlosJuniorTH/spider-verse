@@ -76,6 +76,20 @@ const profileSchema = z.object({
     /** Royalties de creador en basis points. 0 = sin royalties. */
     sellerFeeBasisPoints: z.number().int().min(0).max(10000),
     externalUrl: z.string().nullable(),
+    /**
+     * Enlaces públicos del proyecto. Van al campo `extensions` del JSON, que es
+     * lo que leen wallets y exploradores. Sin esto, el token no apunta a ningún
+     * sitio y no hay forma de saber quién está detrás.
+     *
+     * Poner enlaces MUERTOS es peor que no poner ninguno: es la primera cosa que
+     * comprueba quien sospecha. `metadata:build` avisa si alguno no responde.
+     */
+    socials: z.object({
+      website: z.string().nullable(),
+      twitter: z.string().nullable(),
+      telegram: z.string().nullable(),
+      discord: z.string().nullable(),
+    }),
   }),
 });
 export type TokenProfile = z.infer<typeof profileSchema>;
@@ -157,6 +171,9 @@ const raw = {
       imageFile: 'assets/logo.png',
       sellerFeeBasisPoints: 0,
       externalUrl: null,
+      // Sin decidir. Ver la nota de §7.6 en CONTEXTO.md: los enlaces sociales
+      // son necesarios pero NO suficientes; no generan interés por sí solos.
+      socials: { website: null, twitter: null, telegram: null, discord: null },
     },
   },
 
@@ -199,6 +216,9 @@ const raw = {
       imageFile: 'assets/logo.png',
       sellerFeeBasisPoints: 0,
       externalUrl: null,
+      // Sin decidir. Ver la nota de §7.6 en CONTEXTO.md: los enlaces sociales
+      // son necesarios pero NO suficientes; no generan interés por sí solos.
+      socials: { website: null, twitter: null, telegram: null, discord: null },
     },
   },
 };
