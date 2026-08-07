@@ -150,19 +150,43 @@ async function main(): Promise<void> {
     };
   });
 
-  const tx2 = await sendTransaction(connection, {
-    label: 'crear cuentas + acuñar supply',
-    payer,
-    priorityFeeMicroLamports: priorityFee,
-    instructions,
-  });
+  // En dry-run la tx1 NO se ha enviado, así que el mint todavía no existe en la
+  // cadena y la tx2 no puede crear cuentas para él. Es una dependencia inherente
+  // a simular una secuencia, no un error del código: se informa como tal.
+  let tx2: Awaited<ReturnType<typeof sendTransaction>>;
+  let tx2Simulated = true;
+  try {
+    tx2 = await sendTransaction(connection, {
+      label: 'crear cuentas + acuñar supply',
+      payer,
+      priorityFeeMicroLamports: priorityFee,
+      instructions,
+    });
+  } catch (err) {
+    const dependsOnTx1 =
+      dryRun && err instanceof TxError && /IncorrectProgramId|AccountNotFound|InvalidAccountData/.test(err.message);
+
+    if (!dependsOnTx1) throw err;
+
+    log.warn('La tx2 no se puede simular en dry-run: depende del mint que crea la tx1,');
+    log.warn('y en dry-run la tx1 no se ha enviado, así que ese mint todavía no existe.');
+    log.dim('      No es un fallo del código. Las instrucciones de la tx2 están verificadas');
+    log.dim('      byte a byte en tests/instructions.test.ts, que sí se ejecuta sin red.');
+    tx2 = { signature: null, feeLamports: 0, unitsConsumed: null, dryRun: true, simulationLogs: [] };
+    tx2Simulated = false;
+  }
 
   // ── 4. Registro público del despliegue ───────────────────────────────────
   if (dryRun) {
     log.title('DRY-RUN COMPLETADO');
-    log.ok('Las dos transacciones simulan correctamente. NO se ha creado nada ni gastado nada.');
-    log.kv('Coste que habría tenido', formatSol(mintRent + tx1.feeLamports + tx2.feeLamports));
-    log.info('Para ejecutarlo de verdad, repite el comando sin --dry-run.');
+    if (tx2Simulated) {
+      log.ok('Las dos transacciones simulan correctamente. NO se ha creado nada ni gastado nada.');
+    } else {
+      log.ok('La tx1 simula correctamente. NO se ha creado nada ni gastado nada.');
+      log.warn('La tx2 NO se ha podido simular (depende de la tx1). Queda sin verificar aquí.');
+    }
+    log.kv('Coste que habría tenido', `${formatSol(mintRent + estimate.totalFeeLamports)} aprox.`);
+    log.info('Para ejecutarlo de verdad, repite el comando sin dry-run.');
     return;
   }
 
