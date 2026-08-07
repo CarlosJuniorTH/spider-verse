@@ -123,10 +123,10 @@ const raw = {
 
   // ── Perfil DEVNET: decidido. Token de prueba, sin valor económico. ─────────
   devnet: {
-    name: 'Sasha',
-    symbol: 'SASHA',
+    name: 'Sashita',
+    symbol: 'SASHITA',
     description:
-      'Sasha. Ensayo en la devnet de Solana para ver cómo queda el token antes de nada. ' +
+      'Sashita. Ensayo en la devnet de Solana para ver cómo queda el token antes de nada. ' +
       'NO tiene ningún valor económico, no es negociable y no existe fuera de la red de pruebas.',
 
     tokenProgram: 'spl-token', // conservador, el mismo que se propone para mainnet
