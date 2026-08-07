@@ -56,6 +56,30 @@ No se divide la asignación entre wallets para disimular concentración.
 
 ### 2.3 Dinero
 
+> ### ⚠ RESTRICCIÓN DEL OPERADOR (2026-08-07)
+>
+> **El operador ha dicho explícitamente que no quiere gastar dinero y que las
+> cifras de liquidez planteadas son demasiado para él.**
+>
+> Consecuencias, que NO hay que re-litigar en cada sesión:
+>
+> - **El plan por defecto es quedarse en devnet, a coste 0, indefinidamente.**
+>   No hay fecha límite ni presión para lanzar.
+> - **Raydium / pool propio queda DESCARTADO** mientras esto siga siendo cierto:
+>   requiere aportar capital de liquidez, y un pool insuficiente deja el token
+>   fuera del enrutado de Jupiter (ver `docs/FASE6-mecanismos.md` §0 y §3).
+> - Si algún día se lanza, la vía coherente con esta restricción es una
+>   plataforma con bonding curve (Pump.fun), donde la liquidez la aportan los
+>   compradores. Con sus contrapartidas documentadas: se pierde el control de
+>   supply, decimales y autoridades (§7.3), y la tasa de graduación es muy baja.
+> - **No proponer planes que impliquen aportar capital** sin que el operador
+>   levante antes esta restricción de forma explícita.
+>
+> Aviso de método: en una sesión anterior se usaron cifras de ejemplo
+> (5 SOL de liquidez, SOL a 180 $) para probar el script de presupuesto, y el
+> resultado (~862 €) se interpretó como un requisito real. **Al mostrar cifras
+> de ejemplo, marcarlas como tales de forma inequívoca.**
+
 - **Fase de desarrollo: 0 $.** Todo en devnet / localnet.
 - Mainnet: el presupuesto es "lo más barato posible" para el primer lanzamiento.
 - **Antes de CUALQUIER operación de mainnet**, obligatorio y en este orden:
@@ -409,13 +433,21 @@ de memoria (ver `docs/FASE6-mecanismos.md`).
 
 ### Siguiente paso inmediato
 
-1. **Opcional**: probar `npm run authorities:revoke -- mint update` a mano en una
-   terminal, contra el token de devnet. Es el único script sin ejecutar. El token
-   es un juguete sin valor, así que es el sitio para equivocarse.
-2. Analizar **§7.2** (vesting/lock gratuito y verificable por terceros).
-   Es lo que más pesa ahora: condiciona §7.1.
-3. Decidir **§7.1** (asignación del fundador) y **§4.4** (programa de token).
-4. Fijar el **capital de liquidez**: sin esa cifra no se puede cerrar la FASE 6.
+**Dada la restricción de §2.3, el proyecto está EN PAUSA por decisión del
+operador, y eso es un estado válido, no un bloqueo.** Todo funciona en devnet a
+coste 0. No hay nada urgente.
+
+Si el operador quiere seguir haciendo cosas sin gastar nada:
+
+1. Probar `npm run authorities:revoke -- mint update` a mano en una terminal,
+   contra el token de devnet. Es el único script sin ejecutar, y el token de
+   devnet es un juguete sin valor: es el sitio donde conviene equivocarse.
+2. Elegir nombre, símbolo e imagen definitivos y probarlos en devnet cuantas
+   veces haga falta. Crear tokens de devnet es gratis e ilimitado.
+3. Decidir §4.4 (SPL clásico vs Token-2022) y probarlo en devnet.
+
+**No abordar** el capital de liquidez ni ningún plan de mainnet hasta que el
+operador levante explícitamente la restricción de §2.3.
 
 ---
 
