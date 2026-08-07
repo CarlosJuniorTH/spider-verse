@@ -260,7 +260,7 @@ recibir SOL por volumen **real** sin vender continuamente su asignación?
 | --- | --- | --- |
 | **1** | Preparar entorno y repositorio | ✅ **COMPLETADA** |
 | **2** | Construir versión local/devnet | ✅ **COMPLETADA** |
-| **3** | Crear token de prueba (devnet) | 🟠 **CÓDIGO LISTO Y SIMULADO — bloqueado por el faucet** |
+| **3** | Crear token de prueba (devnet) | ✅ **COMPLETADA — token creado y verificado** |
 | **4** | Probar metadata, supply, authorities, distribución | ✅ **COMPLETADA** (verificada contra un token real de mainnet) |
 | **5** | Simular lanzamiento completo sin dinero real | ✅ **COMPLETADA** |
 | **6** | Comparar mecanismos actuales de lanzamiento | ✅ **COMPLETADA** → `docs/FASE6-mecanismos.md` |
@@ -269,22 +269,42 @@ recibir SOL por volumen **real** sin vender continuamente su asignación?
 
 Todo a fecha de **2026-08-07**. **Gasto real acumulado: 0 €.**
 
-### Por qué la FASE 3 no está cerrada
+### Token de devnet creado (2026-08-07)
 
-El faucet público de devnet lleva todo el día devolviendo **429** ("airdrop limit
-today or the faucet has run dry") desde todos los RPC probados
-(`api.devnet.solana.com`, Alchemy demo, Ankr). La wallet sigue a **0 SOL**, y sin
-saldo no se puede crear el mint.
+| | |
+| --- | --- |
+| Mint | `DfhfKNGhFhtoeWUK88M7avy6sB3R2tuY1jHDpeg9JRXr` |
+| Nombre / símbolo | Devnet Test Coin / DTEST |
+| Supply | 1.000.000.000 (9 decimales) |
+| `freezeAuthority` | **null desde la creación** — no puede bloquear ventas (§2.1) |
+| Metadata PDA | `En4rgJB8tXv1YfBN6gTo2DCF6ZzR4jMkNMQu8wVvKeqs` (607 bytes) |
+| URI | `raw.githubusercontent.com/CarlosJuniorTH/spider-verse/main/assets/metadata.json` |
+| Coste real | **0 €** (0,00710 SOL de devnet, sin valor) |
+| Explorer | https://explorer.solana.com/address/DfhfKNGhFhtoeWUK88M7avy6sB3R2tuY1jHDpeg9JRXr?cluster=devnet |
 
-**No es un fallo del código.** Lo construido está verificado por otras vías:
+`npm run verify:all` → **12 correctas · 4 avisos · 0 errores**.
+Los avisos son correctos: `mintAuthority` y `updateAuthority` siguen vivas
+(se revocan en el último paso, §7.3), y el RPC público limita la consulta de
+tenedores con un 429.
 
-- `npm run simulate:launch` recorre el flujo completo y diagnostica correctamente.
-- `tests/instructions.test.ts` comprueba **byte a byte** las instrucciones reales.
-- La FASE 4 se validó contra un token real de mainnet (BONK), en solo lectura.
+**Cómo se desbloqueó el faucet.** Todos los faucets estaban cerrados: el RPC
+público por límite de IP, y el faucet web con *"Github account has too few
+public repos"*. Se resolvió publicando este repositorio, que además resuelve
+§4.5: la metadata se sirve desde `raw.githubusercontent.com`, sin servidor y a
+coste 0.
 
-**Para desbloquearla:** consigue SOL de prueba en https://faucet.solana.com
-(pega ahí la PUBKEY, **nunca** la clave privada), y luego:
-`npm run token:create` · `npm run metadata:attach` · `npm run verify:all`.
+### Repositorio público
+
+https://github.com/CarlosJuniorTH/spider-verse — MIT.
+Antes de publicar se genericizaron las rutas locales: el repo **no revela** la
+ruta del fichero de claves ni el nombre de usuario del equipo.
+
+### Lo único que NO se ha ejecutado en devnet
+
+`npm run authorities:revoke`. Su guarda exige confirmación escrita en un
+terminal interactivo y **se negó a ejecutarse** desde una sesión automatizada.
+Es el comportamiento correcto y quedó verificado. Para probarlo hay que
+lanzarlo a mano desde una terminal.
 
 ### FASE 8 — qué significa "preparada, no ejecutada"
 
@@ -380,10 +400,13 @@ de memoria (ver `docs/FASE6-mecanismos.md`).
 
 ### Siguiente paso inmediato
 
-1. Conseguir SOL de devnet en https://faucet.solana.com y cerrar la FASE 3.
-2. Analizar §7.2 (vesting/lock gratuito y verificable por terceros).
-3. Decidir §7.1 y §4.4.
-4. Fijar el capital de liquidez: sin esa cifra no se puede cerrar la FASE 6.
+1. **Opcional**: probar `npm run authorities:revoke -- mint update` a mano en una
+   terminal, contra el token de devnet. Es el único script sin ejecutar. El token
+   es un juguete sin valor, así que es el sitio para equivocarse.
+2. Analizar **§7.2** (vesting/lock gratuito y verificable por terceros).
+   Es lo que más pesa ahora: condiciona §7.1.
+3. Decidir **§7.1** (asignación del fundador) y **§4.4** (programa de token).
+4. Fijar el **capital de liquidez**: sin esa cifra no se puede cerrar la FASE 6.
 
 ---
 
